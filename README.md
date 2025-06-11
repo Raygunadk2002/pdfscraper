@@ -1,35 +1,22 @@
+# Planning PDF Keyword Scanner (Large Batch Edition)
 
-# Planning PDF Keyword Scanner
-
-A simple Streamlit app to batch‑scan 10s–100s of planning‑related PDF documents, flagging user‑defined keywords and showing the surrounding text.
+Batch‑scan **hundreds of planning‑related PDFs** for your own keyword list.  
+Now supports uploading ZIP archives in one go.
 
 ## Features
-* 🔍 **Editable keyword list** – defaults provided, tweak in the sidebar.
-* 📑 **Bulk PDF upload** – drag in whole folders.
-* 📌 **Highlighted context snippets** – adjustable size.
-* ⬇️ **CSV export** of all matches.
+* 🔍 Editable keyword list in the sidebar.
+* 🗂️ Upload individual PDFs **or** a ZIP containing many PDFs.
+* 📌 Highlighted context snippets (window adjustable).
+* ⬇️ CSV export of all matches.
+* 🌐 Streamlit config snippet included for files >200 MB.
 
 ## Quickstart
-
 ```bash
-git clone <your‑repo‑url>
+git clone <your‑repo>
 cd planning_keyword_scanner
-python -m venv venv && source venv/bin/activate   # optional
+python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 streamlit run planning_keyword_extractor_app.py
 ```
 
-Then open the local URL that Streamlit displays.
-
-## Folder structure
-
-```
-planning_keyword_scanner/
-├── planning_keyword_extractor_app.py
-├── requirements.txt
-└── README.md
-```
-
----
-
-Built with ❤️ in June 2025.
+Enjoy!
