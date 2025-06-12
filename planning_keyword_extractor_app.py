@@ -42,12 +42,12 @@ DEFAULT_KEYWORDS = [
 
 
 def _format_default_keywords(kw_list: List[str]) -> str:
-    """Return comma‑separated keyword string suitable for the text area default."""
+    """Return comma-separated keyword string suitable for the text area default."""
     return ", ".join(sorted(set(kw_list)))
 
 
 keywords_input = st.sidebar.text_area(
-    "Keywords to search (comma‑separated)",
+    "Keywords to search (comma-separated)",
     value=_format_default_keywords(DEFAULT_KEYWORDS),
     height=120,
     help="Edit the list or paste your own keywords, separated by commas.",
@@ -55,7 +55,7 @@ keywords_input = st.sidebar.text_area(
 
 
 def _parse_keywords(s: str) -> List[str]:
-    """Convert the textarea value to a clean keyword list."""
+    """Convert the textarea value to a clean keyword list.""""
     return [k.strip() for k in s.split(",") if k.strip()]
 
 
@@ -79,7 +79,7 @@ context_window = st.sidebar.slider(
 ################################################################################
 
 uploaded_files = st.file_uploader(
-    "Upload PDF files **or** ZIP archives (Ctrl/⌘‑click for multi‑select)",
+    "Upload PDF files **or** ZIP archives (Ctrl/⌘-click for multi-select)",
     type=["pdf", "zip"],
     accept_multiple_files=True,
 )
@@ -94,13 +94,13 @@ run_btn = st.button(
 
 
 def extract_text_from_pdf(pdf_path: Path) -> str:
-    """Return the concatenated text of a PDF file using pdfplumber."""
+    """Return the concatenated text of a PDF file using pdfplumber.""""
     with pdfplumber.open(str(pdf_path)) as pdf:
         return "\n".join(page.extract_text() or "" for page in pdf.pages)
 
 
 def find_snippets(text: str, keyword: str, window: int) -> List[str]:
-    """Return list of context snippets around each keyword match."""
+    """Return list of context snippets around each keyword match.""""
     pattern = re.compile(re.escape(keyword), re.IGNORECASE)
     snippets: List[str] = []
     for match in pattern.finditer(text):
@@ -111,7 +111,7 @@ def find_snippets(text: str, keyword: str, window: int) -> List[str]:
 
 
 def highlight(snippet: str, keyword: str) -> str:
-    """Return snippet as Markdown with **bold** highlights around keyword."""
+    """Return snippet as Markdown with **bold** highlights around keyword.""""
     pattern = re.compile(re.escape(keyword), re.IGNORECASE)
     return pattern.sub(lambda m: f"**{m.group(0)}**", snippet)
 
@@ -121,7 +121,7 @@ def highlight(snippet: str, keyword: str) -> str:
 
 
 def gather_pdf_paths(temp_dir: Path) -> List[Path]:
-    """Write uploaded files to *temp_dir* and return a list of PDF Paths."""
+    """Write uploaded files to *temp_dir* and return a list of PDF Paths.""""
     pdf_paths: List[Path] = []
 
     for uploaded in uploaded_files:
@@ -186,20 +186,41 @@ if run_btn and uploaded_files:
     else:
         df = pd.DataFrame(results)
 
-        st.subheader("🔎 Results")
-
-        # Highlighting
+        # Highlight snippets once for markdown display
         for kw in keywords:
             mask = df["Keyword"].str.lower() == kw.lower()
             df.loc[mask, "Snippet"] = df.loc[mask, "Snippet"].apply(lambda s, _kw=kw: highlight(s, _kw))
 
-        st.dataframe(df, use_container_width=True, height=600)
+        st.subheader("🗂️ Interactive results viewer")
+
+        tabs = st.tabs(["📑 By document", "🔍 By keyword", "📊 Raw table"])
+
+        # Tab 1 – group by document
+        with tabs[0]:
+            for file_name, file_df in df.groupby("File"):
+                with st.expander(f"{file_name} – {len(file_df)} hit(s)"):
+                    for keyword, kw_df in file_df.groupby("Keyword"):
+                        with st.expander(f"⚡ {keyword} – {len(kw_df)}"):
+                            for snippet in kw_df["Snippet"]:
+                                st.markdown(f"• {snippet}", unsafe_allow_html=True)
+
+        # Tab 2 – group by keyword
+        with tabs[1]:
+            for keyword, kw_df in df.groupby("Keyword"):
+                with st.expander(f"🔑 {keyword} – {len(kw_df)} occurrence(s)"):
+                    for file_name, file_df in kw_df.groupby("File"):
+                        with st.expander(f"📄 {file_name} – {len(file_df)}"):
+                            for snippet in file_df["Snippet"]:
+                                st.markdown(f"• {snippet}", unsafe_allow_html=True)
+
+        # Tab 3 – raw table
+        with tabs[2]:
+            st.dataframe(df, use_container_width=True, height=600)
 
         # CSV download
-        csv = df.to_csv(index=False).encode("utf-8")
         st.download_button(
             label="⬇️ Download results as CSV",
-            data=csv,
+            data=df.to_csv(index=False).encode("utf-8"),
             file_name="keyword_scan_results.csv",
             mime="text/csv",
             use_container_width=True,
@@ -212,8 +233,8 @@ if run_btn and uploaded_files:
 with st.expander("ℹ️ Tips for processing hundreds of PDFs"):
     st.markdown(
         """
-* **Upload ZIP archives** – zipping 500 PDFs into a single file avoids browser-side multi‑select limits and speeds up the transfer.
-* For files >200 MB create a `.streamlit/config.toml` next to this script with:
+* **Upload ZIP archives** – zipping 500 PDFs into a single file avoids browser-side multi-select limits and speeds up the transfer.
+* For files >200 MB create a `.streamlit/config.toml` next to this script with:
 
 ```toml
 [server]
@@ -221,7 +242,7 @@ maxUploadSize = 2000  # MB (adjust)
 maxMessageSize = 2000
 ```
 
-* The app now streams each PDF to disk before reading it, keeping RAM usage low – you can comfortably handle hundreds of typical planning docs on a 1‑2 GB instance.
+* The app streams each PDF to disk before reading it, keeping RAM usage low – you can comfortably handle hundreds of typical planning docs on a 1-2 GB instance.
         """
     )
 
